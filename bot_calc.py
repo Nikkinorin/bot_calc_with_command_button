@@ -10,7 +10,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_keyboard = [['Начать расчет']]
     markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
     await update.message.reply_text(
-        "Привет! Я калькулятор для расчета себестоимости продукции. Нажмите кнопку ниже, чтобы начать расчет.",
+        "Привет! Я калькулятор для расчета себестоимости продукции.\n"
+        "Нажмите кнопку ниже, чтобы начать расчет.",
         reply_markup=markup
     )
     return PRICE
@@ -43,7 +44,7 @@ async def vat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     freight = context.user_data['freight']
     duty = context.user_data['duty']
     vat = context.user_data['vat']
-    extra_cost = 90  # Дополнительные расходы за тонну
+    extra_cost = 90
 
     freight_per_kg = freight / weight
     duty_per_kg = price * duty / 100
@@ -52,28 +53,17 @@ async def vat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     total_per_ton = total_per_kg * 1000 + extra_cost
 
     result = (
-        f"Результаты расчета:
-"
-        f"Цена за кг: {price:.2f} USD
-"
-        f"Общий вес: {weight:.2f} кг
-"
-        f"Фрахт: {freight:.2f} USD
-"
-        f"Пошлина: {duty:.1f}%
-"
-        f"НДС: {vat:.1f}%
-"
-        f"Фрахт за кг: {freight_per_kg:.4f} USD
-"
-        f"Пошлина за кг: {duty_per_kg:.4f} USD
-"
-        f"НДС за кг: {vat_per_kg:.4f} USD
-"
-        f"Итого за кг: {total_per_kg:.4f} USD
-"
-        f"Итого за тонну (+90 USD): {total_per_ton:.2f} USD
-"
+        f"Результаты расчета:\n"
+        f"Цена за кг: {price:.2f} USD\n"
+        f"Общий вес: {weight:.2f} кг\n"
+        f"Фрахт: {freight:.2f} USD\n"
+        f"Пошлина: {duty:.1f}%\n"
+        f"НДС: {vat:.1f}%\n"
+        f"Фрахт за кг: {freight_per_kg:.4f} USD\n"
+        f"Пошлина за кг: {duty_per_kg:.4f} USD\n"
+        f"НДС за кг: {vat_per_kg:.4f} USD\n"
+        f"Итого за кг: {total_per_kg:.4f} USD\n"
+        f"Итого за тонну (+90 USD): {total_per_ton:.2f} USD\n"
         "Нажмите /start для нового расчета."
     )
     await update.message.reply_text(result)
