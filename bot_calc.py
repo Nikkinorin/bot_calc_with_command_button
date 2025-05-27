@@ -1,95 +1,69 @@
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackQueryHandler, ContextTypes, ConversationHandler
 
-from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
-from telegram.constants import ParseMode
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, ConversationHandler, filters
+TOKEN = '8166412144:AAH6gFmQPOjGn3CSoDmwJuSBzSxEfbQ8x8M'
 
-TOKEN = 8166412144:AAH6gFmQPOjGn3CSoDmwJuSBzSxEfbQ8x8M
-
-PRICE, WEIGHT, FREIGHT, EXTRA_COST, DUTY, NDS = range(6)
-
+PRICE, WEIGHT, FREIGHT, EXTRA, DUTY, VAT = range(6)
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data.clear()
-    await update.message.reply_text("💲 Введите цену за кг (USD):", reply_markup=ReplyKeyboardRemove())
-    return PRICE
-
-async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data['price'] = float(update.message.text.strip())
-    await update.message.reply_text("⚖️ Введите общий вес продукции (кг):")
+    keyboard = [[InlineKeyboardButton("Начать расчёт", callback_data='start_calc')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text("Привет! Нажми кнопку ниже, чтобы начать расчёт.", reply_markup=reply_markup)
+async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    if query.data == 'start_calc':
+        await query.edit_message_text("Введите цену за кг (USD):")
+        return PRICE
+async def get_price(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['price'] = float(update.message.text)
+    await update.message.reply_text("Введите общий вес продукции (кг):")
     return WEIGHT
-
-async def weight(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data['weight'] = float(update.message.text.strip())
-    await update.message.reply_text("🚚 Введите стоимость фрахта (USD):")
+async def get_weight(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['weight'] = float(update.message.text)
+    await update.message.reply_text("Введите стоимость фрахта (USD):")
     return FREIGHT
-
-async def freight(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data['freight'] = float(update.message.text.strip())
-    await update.message.reply_text("📦 Введите доп. расходы (USD):")
-    return EXTRA_COST
-
-async def extra_cost(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data['extra_cost'] = float(update.message.text.strip())
-    await update.message.reply_text("🧾 Введите процент пошлины (%):")
+async def get_freight(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['freight'] = float(update.message.text)
+    await update.message.reply_text("Введите доп. расходы (USD):")
+    return EXTRA
+async def get_extra(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['extra'] = float(update.message.text)
+    await update.message.reply_text("Введите процент пошлины (%):")
     return DUTY
-
-async def duty(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data['duty'] = float(update.message.text.strip())
-    await update.message.reply_text("💰 Введите процент НДС (%):")
-    return NDS
-
-async def nds(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data['nds'] = float(update.message.text.strip())
-    price_per_kg = context.user_data['price']
-    weight_kg = context.user_data['weight']
-    freight = context.user_data['freight']
-    extra_costs = context.user_data['extra_cost']
-    duty = context.user_data['duty']
-    nds = context.user_data['nds']
-    total_freight = freight + extra_costs
-    freight_per_kg = total_freight / weight_kg
-    base_price_per_kg = price_per_kg + freight_per_kg
-    duty_amount = base_price_per_kg * (duty / 100)
-    nds_amount = (base_price_per_kg + duty_amount) * (nds / 100)
-    final_price_per_kg = base_price_per_kg + duty_amount + nds_amount
-    final_price_per_ton = final_price_per_kg * 1000 + extra_costs
-    keyboard = [["/start"]]
-    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
-    result = (
-        "📊 *Результаты расчёта:*\n\n"
-        f"💲 *Цена за кг:* `{price_per_kg:.2f}` USD\n"
-        f"⚖️ *Вес:* `{weight_kg:.2f}` кг\n"
-        f"🚚 *Фрахт:* `{freight:.2f}` USD\n"
-        f"📦 *Доп. расходы:* `{extra_costs:.2f}` USD\n"
-        f"🧾 *Пошлина:* `{duty}%`\n"
-        f"💰 *НДС:* `{nds}%`\n\n"
-        f"📈 *Фрахт за кг:* `{freight_per_kg:.4f}` USD\n"
-        f"📈 *Пошлина за кг:* `{duty_amount:.4f}` USD\n"
-        f"📈 *НДС за кг:* `{nds_amount:.4f}` USD\n\n"
-        f"✅ *Итог за кг:* `{final_price_per_kg:.4f}` USD\n"
-        f"✅ *Итог за тонну:* `{final_price_per_ton:.2f}` USD\n\n"
-        "_Нажми кнопку ниже или введи команду /start для нового расчёта._"
-    )
-    await update.message.reply_text(result, parse_mode=ParseMode.MARKDOWN, reply_markup=reply_markup)
+async def get_duty(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['duty'] = float(update.message.text)
+    await update.message.reply_text("Введите процент НДС (%):")
+    return VAT
+async def get_vat(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['vat'] = float(update.message.text)
+    result = calculate(context.user_data)
+    keyboard = [[InlineKeyboardButton("/start", callback_data='start_calc')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(result, reply_markup=reply_markup, parse_mode='HTML')
     return ConversationHandler.END
+def calculate(data):
+    price, weight, freight, extra, duty, vat = data.values()
+    total_freight_per_kg = (freight + extra) / weight
+    total_price_per_kg = price + total_freight_per_kg
+    duty_per_kg = (duty / 100) * price
+    vat_per_kg = (vat / 100) * price
+    total_per_kg = price + total_freight_per_kg + duty_per_kg + vat_per_kg
+    total_per_ton = total_per_kg * 1000
+    return f"<b>📊 Результаты расчёта:</b>\n💲 Цена за кг: {price:.2f} USD\n⚖ Вес: {weight:.2f} кг\n🚚 Фрахт: {freight:.2f} USD\n💼 Доп. расходы: {extra:.2f} USD\n💸 Пошлина: {duty:.1f}%\n💡 НДС: {vat:.1f}%\n---------------------\n🚚 Фрахт за кг: {total_freight_per_kg:.4f} USD\n💸 Пошлина за кг: {duty_per_kg:.4f} USD\n💡 НДС за кг: {vat_per_kg:.4f} USD\n---------------------\n💰 Итог за кг: {total_per_kg:.4f} USD\n💰 Итог за тонну: {total_per_ton:.2f} USD" 
 
-async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text('❌ Расчёт отменён.', reply_markup=ReplyKeyboardRemove())
-    return ConversationHandler.END
-
-app = ApplicationBuilder().token(TOKEN).build()
-conv_handler = ConversationHandler(
-    entry_points=[CommandHandler('start', start)],
-    states={
-        PRICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, price)],
-        WEIGHT: [MessageHandler(filters.TEXT & ~filters.COMMAND, weight)],
-        FREIGHT: [MessageHandler(filters.TEXT & ~filters.COMMAND, freight)],
-        EXTRA_COST: [MessageHandler(filters.TEXT & ~filters.COMMAND, extra_cost)],
-        DUTY: [MessageHandler(filters.TEXT & ~filters.COMMAND, duty)],
-        NDS: [MessageHandler(filters.TEXT & ~filters.COMMAND, nds)],
-    },
-    fallbacks=[CommandHandler('cancel', cancel)]
-)
-app.add_handler(conv_handler)
 if __name__ == '__main__':
-    print("Бот запущен...")
+    app = ApplicationBuilder().token(TOKEN).build()
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('start', start), CallbackQueryHandler(button)],
+        states={
+            PRICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_price)],
+            WEIGHT: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_weight)],
+            FREIGHT: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_freight)],
+            EXTRA: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_extra)],
+            DUTY: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_duty)],
+            VAT: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_vat)]
+        },
+        fallbacks=[]
+    )
+    app.add_handler(conv_handler)
     app.run_polling()
