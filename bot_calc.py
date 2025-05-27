@@ -1,24 +1,23 @@
+import os
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ConversationHandler, ContextTypes
 
-TOKEN = 8166412144:AAH6gFmQPOjGn3CSoDmwJuSBzSxEfBq8x8M
+TOKEN = os.getenv('TOKEN')  # Читаем токен из окружения
 
-# Шаги
 PRICE, WEIGHT, FREIGHT, DUTY, VAT = range(5)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    reply_keyboard = [['Начать расчёт']]
+    reply_keyboard = [['Начать расчет']]
     markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
     await update.message.reply_text(
-        "Привет! Я калькулятор для расчёта себестоимости продукции.\n"
-        "Нажмите кнопку ниже, чтобы начать.",
+        "Привет! Я калькулятор для расчета себестоимости продукции. Нажмите кнопку ниже, чтобы начать расчет.",
         reply_markup=markup
     )
     return PRICE
 
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['price'] = float(update.message.text)
-    await update.message.reply_text('Введите общий вес продукции (кг):')
+    await update.message.reply_text('Введите общий вес продукции (в кг):')
     return WEIGHT
 
 async def weight(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -46,28 +45,38 @@ async def vat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     vat = context.user_data['vat']
     extra_cost = 90  # Дополнительные расходы за тонну
 
-    price_per_kg = price
     freight_per_kg = freight / weight
-    duty_per_kg = price_per_kg * duty / 100
-    vat_per_kg = price_per_kg * vat / 100
-    total_per_kg = price_per_kg + freight_per_kg + duty_per_kg + vat_per_kg
+    duty_per_kg = price * duty / 100
+    vat_per_kg = price * vat / 100
+    total_per_kg = price + freight_per_kg + duty_per_kg + vat_per_kg
     total_per_ton = total_per_kg * 1000 + extra_cost
 
-    reply_text = (
-        "📊 Результаты расчёта:\n"
-        f"💲 Цена за кг: {price_per_kg:.2f} USD\n"
-        f"📦 Вес: {weight:.2f} кг\n"
-        f"🚢 Фрахт: {freight:.2f} USD\n"
-        f"📈 Пошлина: {duty:.1f}%\n"
-        f"💰 НДС: {vat:.1f}%\n"
-        f"📉 Фрахт за кг: {freight_per_kg:.4f} USD\n"
-        f"📉 Пошлина за кг: {duty_per_kg:.4f} USD\n"
-        f"📉 НДС за кг: {vat_per_kg:.4f} USD\n"
-        f"✅ Итого за кг: {total_per_kg:.4f} USD\n"
-        f"✅ Итого за тонну (с доп. расходами): {total_per_ton:.2f} USD\n\n"
-        "Нажмите /start для нового расчёта."
+    result = (
+        f"Результаты расчета:
+"
+        f"Цена за кг: {price:.2f} USD
+"
+        f"Общий вес: {weight:.2f} кг
+"
+        f"Фрахт: {freight:.2f} USD
+"
+        f"Пошлина: {duty:.1f}%
+"
+        f"НДС: {vat:.1f}%
+"
+        f"Фрахт за кг: {freight_per_kg:.4f} USD
+"
+        f"Пошлина за кг: {duty_per_kg:.4f} USD
+"
+        f"НДС за кг: {vat_per_kg:.4f} USD
+"
+        f"Итого за кг: {total_per_kg:.4f} USD
+"
+        f"Итого за тонну (+90 USD): {total_per_ton:.2f} USD
+"
+        "Нажмите /start для нового расчета."
     )
-    await update.message.reply_text(reply_text)
+    await update.message.reply_text(result)
     return ConversationHandler.END
 
 def main():
@@ -88,7 +97,5 @@ def main():
     app.add_handler(conv_handler)
     app.run_polling()
 
-if __name__ == '__main__':
-    main()
 if __name__ == '__main__':
     main()
