@@ -1,7 +1,7 @@
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ConversationHandler, ContextTypes
 
-TOKEN = '8166412144:AAH6gFmQPOjGn3CSoDmwJuSBzSxEfBq8x8M'
+TOKEN = 8166412144:AAH6gFmQPOjGn3CSoDmwJuSBzSxEfBq8x8M
 
 # Шаги
 PRICE, WEIGHT, FREIGHT, DUTY, VAT = range(5)
