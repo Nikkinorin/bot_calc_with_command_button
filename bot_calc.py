@@ -3,7 +3,7 @@ from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.constants import ParseMode
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, ConversationHandler, filters
 
-TOKEN = 'YOUR_TOKEN_HERE'
+TOKEN = 8166412144:AAH6gFmQPOjGn3CSoDmwJuSBzSxEfbQ8x8M
 
 PRICE, WEIGHT, FREIGHT, EXTRA_COST, DUTY, NDS = range(6)
 
