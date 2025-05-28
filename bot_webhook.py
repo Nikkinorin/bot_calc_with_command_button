@@ -1,30 +1,28 @@
 from flask import Flask, request
-from telegram import Bot, Update
-from telegram.ext import Dispatcher, CommandHandler, MessageHandler, filters
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 import os
 
-TOKEN = '8166412144:AAH6gFmQPOjGn3CSoDmwJuSBzSxEfbQ8x8M'
-bot = Bot(token=TOKEN)
+TOKEN = '8166412144:AAH6gFmQPOjGn3CSoDmwJuSBzSxEfbQ8x8M'  # Замени на свой токен, если нужно
+
 app = Flask(__name__)
-dispatcher = Dispatcher(bot=bot, update_queue=None, workers=0)
+application = ApplicationBuilder().token(TOKEN).build()
 
 # Обработчик команды /start
-def start(update: Update, context):
-    update.message.reply_text("Бот работает через Webhook!")
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Бот работает через Webhook!")
 
 # Обработчик текстовых сообщений
-def echo(update: Update, context):
-    update.message.reply_text(update.message.text)
+async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(update.message.text)
 
-# Добавляем обработчики в dispatcher
-dispatcher.add_handler(CommandHandler("start", start))
-dispatcher.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
+application.add_handler(CommandHandler("start", start))
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
 
-# Webhook обработка
 @app.route(f'/{TOKEN}', methods=['POST'])
-def webhook():
-    update = Update.de_json(request.get_json(force=True), bot)
-    dispatcher.process_update(update)
+async def webhook():
+    update = Update.de_json(request.get_json(force=True), application.bot)
+    await application.process_update(update)
     return 'ok'
 
 if __name__ == '__main__':
