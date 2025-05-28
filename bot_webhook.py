@@ -3,16 +3,21 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 import os
 
-TOKEN = '8166412144:AAH6gFmQPOjGn3CSoDmwJuSBzSxEfbQ8x8M'  # Замени на свой токен, если нужно
+TOKEN = '8166412144:AAH6gFmQPOjGn3CSoDmwJuSBzSxEfbQ8x8M'  # Замени на свой токен, если потребуется
 
 app = Flask(__name__)
 application = ApplicationBuilder().token(TOKEN).build()
+
+# Проверочный маршрут для корневого адреса
+@app.route('/', methods=['GET'])
+def home():
+    return 'Сервер Flask работает!'
 
 # Обработчик команды /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Бот работает через Webhook!")
 
-# Обработчик текстовых сообщений
+# Обработчик всех текстовых сообщений
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(update.message.text)
 
