@@ -118,3 +118,14 @@ conv_handler = ConversationHandler(
         DUTY: [MessageHandler(filters.TEXT & ~filters.COMMAND, duty)],
         NDS: [MessageHandler(filters.TEXT & ~filters.COMMAND, nds)],
     },
+    fallbacks=[CommandHandler('cancel', cancel)]
+)
+app.add_handler(conv_handler)
+
+if __name__ == '__main__':
+    app.run_webhook(
+        listen="0.0.0.0",
+        port=PORT,
+        url_path=TOKEN,
+        webhook_url=f"https://bot-calc-with-command-button.onrender.com/{TOKEN}"
+    )
