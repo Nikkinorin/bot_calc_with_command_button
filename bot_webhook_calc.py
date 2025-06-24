@@ -2,7 +2,7 @@ from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ConversationHandler, ContextTypes, filters
 import os
 
-TOKEN = '8166412144:AAH6gFmQPOjGn3CSoDmwJuSBzSxEfbQ8x8M'
+TOKEN = os.environ.get("BOT_TOKEN")  # Безопаснее, чем захардкоженный токен
 PORT = int(os.environ.get('PORT', 5000))
 
 PRICE, WEIGHT, FREIGHT, EXTRA_COST, DUTY, NDS = range(6)
@@ -24,8 +24,8 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def weight(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         weight_kg = float(update.message.text.strip())
-        if weight_kg == 0:
-            await update.message.reply_text("Ошибка: Вес не может быть 0.")
+        if weight_kg <= 0:
+            await update.message.reply_text("Ошибка: Вес должен быть больше 0.")
             return WEIGHT
         context.user_data['weight'] = weight_kg
     except ValueError:
@@ -68,6 +68,7 @@ async def nds(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Ошибка: Введите число для НДС.")
         return NDS
 
+    # Извлечение данных
     price_per_kg = context.user_data['price']
     weight_kg = context.user_data['weight']
     freight = context.user_data['freight']
@@ -75,13 +76,13 @@ async def nds(update: Update, context: ContextTypes.DEFAULT_TYPE):
     duty = context.user_data['duty']
     nds = context.user_data['nds']
 
-    total_freight = freight + extra_costs
-    freight_per_kg = total_freight / weight_kg
+    # Расчёты
+    freight_per_kg = freight / weight_kg
     base_price_per_kg = price_per_kg + freight_per_kg
     duty_amount = base_price_per_kg * (duty / 100)
     nds_amount = (base_price_per_kg + duty_amount) * (nds / 100)
     final_price_per_kg = base_price_per_kg + duty_amount + nds_amount
-    final_price_per_ton = final_price_per_kg * 1000 + extra_costs
+    final_price_per_ton = final_price_per_kg * 1000 + extra_costs  # <== теперь extra_costs добавляется здесь
 
     keyboard = [["/start"]]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
@@ -107,6 +108,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text('❌ Расчёт отменён.', reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
+# Создание и запуск приложения
 app = ApplicationBuilder().token(TOKEN).build()
 conv_handler = ConversationHandler(
     entry_points=[CommandHandler('start', start)],
