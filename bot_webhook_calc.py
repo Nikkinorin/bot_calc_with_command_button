@@ -2,7 +2,7 @@ from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ConversationHandler, ContextTypes, filters
 import os
 
-TOKEN = os.environ.get("BOT_TOKEN")  # Безопаснее, чем захардкоженный токен
+TOKEN = '8166412144:AAH6gFmQPOjGn3CSoDmwJuSBzSxEfbQ8x8M'
 PORT = int(os.environ.get('PORT', 5000))
 
 PRICE, WEIGHT, FREIGHT, EXTRA_COST, DUTY, NDS = range(6)
