@@ -2,7 +2,7 @@ from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ConversationHandler, ContextTypes, filters
 import os
 
-TOKEN = '8166412144:AAH6gFmQPOjGn3CSoDmwJuSBzSxEfbQ8x8M'
+TOKEN = '8166412144:AAEnjKu4Eu2UMXDmWfjRE9QKN2Ctz7giG40'
 PORT = int(os.environ.get('PORT', 5000))
 
 PRICE, WEIGHT, FREIGHT, EXTRA_COST, DUTY, NDS = range(6)
